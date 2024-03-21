@@ -1,6 +1,11 @@
-This simple application allows safely keep passwords using only one master key.
+This simple application allows safely keep passwords for browser using only one master key.
 
-The cryptography part is based on cryptography and hashlib packages. 
+For each website a user should provide alias, url and login. Based on url, login and secret master-key, an 
+automatical 64 symbols password is generated using sha256 algorithm. The usage of master-key and hash
+functions forces the password to be almost random sequence of numbers and letters a-f. A line containing
+alias, url, login and generated password is added to password.gpwd file, while encrypted master-key is saved
+in master-key.gpwd file. The cryptography part is based on cryptography and hashlib packages and graphical 
+interface relies on CustomTkinter pacakege. 
 
 Buttons:
 
