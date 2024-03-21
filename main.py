@@ -6,7 +6,7 @@ from customtkinter import CTkButton as Button
 from customtkinter import CTkInputDialog as InputDialog
 from customtkinter import CTkScrollableFrame as ScrollableFrame
 
-from shifr import Shifr, make_verification_key
+from shifr import Shifr, make_verification_key, check_correct_shifr
 from utils import make_formatted_key
 from verification import check_credentials
 from generate_pwd import make_pwd
@@ -135,13 +135,14 @@ class App(ctk.CTk):
         else:
             dialog = InputDialog(text="Master-key:", title="Key")
             key = dialog.get_input()
-            try:
-                shifr = Shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
-                              verification_key_string=self.verification_key_string)
+
+            shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                        verification_key_string=self.verification_key_string)
+            if shifr:
                 text = shifr.get_decrypted_pwds()
                 self.clear_decrypted_pwds()
                 self.show_pwds(text)
-            except BaseException:
+            else:
                 self.communication_message(f'{key} is incorrect key or password file is damaged.')
 
     def show_pwds(self, text: str):
@@ -171,10 +172,9 @@ class App(ctk.CTk):
         else:
             dialog = InputDialog(text="Master-key:", title="Key")
             key = dialog.get_input()
-
-            try:
-                shifr = Shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
-                              verification_key_string=self.verification_key_string)
+            shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                        verification_key_string=self.verification_key_string)
+            if shifr:
                 with open(self.file_pwds, 'r') as f:
                     encrypted_pwds = f.read()
                 if encrypted_pwds == '':
@@ -191,20 +191,20 @@ class App(ctk.CTk):
                         self.clear_entries()
                     else:
                         self.communication_message(f'Password with url {url} and login {login} is already added.')
-            except BaseException:
+            else:
                 self.communication_message(f'{key} is incorrect key or password file is damaged.')
 
     def show_last_pwd(self):
         """Show last password."""
         dialog = InputDialog(text="Master-key:", title="Key")
         key = dialog.get_input()
-        try:
-            shifr = Shifr(key=key, file_key=self.file_key, file_pwds=self.file_pwds,
-                          verification_key_string=self.verification_key_string)
+        shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                    verification_key_string=self.verification_key_string)
+        if shifr:
             text = shifr.get_decrypted_pwds()
             last_pwd = get_lines_for_output(text)[-1]
             self.communication_message(last_pwd)
-        except BaseException:
+        else:
             self.communication_message(f'{key} is incorrect key or password file is damaged.')
 
     def get_pwd(self):
@@ -220,13 +220,13 @@ class App(ctk.CTk):
         else:
             dialog = InputDialog(text="Master-key:", title="Key")
             key = dialog.get_input()
-            try:
-                shifr = Shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
-                              verification_key_string=self.verification_key_string)
+            shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                        verification_key_string=self.verification_key_string)
+            if shifr:
                 formatted_key = make_formatted_key(key)
                 auto_pwd = make_pwd(url=url, login=login, key=formatted_key)
                 self.communication_message(auto_pwd)
-            except BaseException:
+            else:
                 self.communication_message(f'{key} is incorrect key.')
 
     def rm_last_pwd(self):
@@ -236,42 +236,45 @@ class App(ctk.CTk):
         else:
             dialog = InputDialog(text="Master-key:", title="Key")
             key = dialog.get_input()
-            try:
-                shifr = Shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
-                              verification_key_string=self.verification_key_string)
+            shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                        verification_key_string=self.verification_key_string)
+            if shifr:
                 remove_last_line(file_name=self.file_pwds)
                 self.clear_last_decrypted_pwd()
                 self.communication_message('The last password is deleted successfully.')
-            except BaseException:
+            else:
                 self.communication_message(f'{key} is incorrect key.')
 
     def rm_pwd(self):
         """Remove password with given url and login."""
         dialog = InputDialog(text="Master-key:", title="Key")
         key = dialog.get_input()
-        shifr = Shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
-                      verification_key_string=self.verification_key_string)
+        shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                    verification_key_string=self.verification_key_string)
+        if shifr:
 
-        dialog_url = InputDialog(text="Url:", title="Url")
-        url = dialog_url.get_input()
+            dialog_url = InputDialog(text="Url:", title="Url")
+            url = dialog_url.get_input()
 
-        dialog_login = InputDialog(text="Login:", title="Login")
-        login = dialog_login.get_input()
+            dialog_login = InputDialog(text="Login:", title="Login")
+            login = dialog_login.get_input()
 
-        text = shifr.get_decrypted_pwds()
-        deleted, new_text = remove_line(text=text, url=url, login=login)
-        if deleted:
-            if new_text == '':
-                encrypted_text = ''
+            text = shifr.get_decrypted_pwds()
+            deleted, new_text = remove_line(text=text, url=url, login=login)
+            if deleted:
+                if new_text == '':
+                    encrypted_text = ''
+                else:
+                    encrypted_text = shifr.encrypt_text(text=new_text)
+                with open(self.file_pwds, 'w') as f:
+                    f.writelines(encrypted_text)
+                self.communication_message(f'The password with url {url} and login {login} is deleted successfully.')
             else:
-                encrypted_text = shifr.encrypt_text(text=new_text)
-            with open(self.file_pwds, 'w') as f:
-                f.writelines(encrypted_text)
-            self.communication_message(f'The password with url {url} and login {login} is deleted successfully.')
+                self.communication_message(f'Password with url {url} and login {login} does not exist.')
+            self.clear_decrypted_pwds()
+            self.show_pwds(new_text)
         else:
-            self.communication_message(f'Password with url {url} and login {login} does not exist.')
-        self.clear_decrypted_pwds()
-        self.show_pwds(new_text)
+            self.communication_message(f'{key} is incorrect key.')
 
     def change_master_key(self):
         """Change master-key.
@@ -279,12 +282,11 @@ class App(ctk.CTk):
         Reencrypt files with password and master-key."""
         dialog = InputDialog(text="Master-key:", title="Key")
         key = dialog.get_input()
-        try:
-            shifr = Shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
-                          verification_key_string=self.verification_key_string)
+        shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                    verification_key_string=self.verification_key_string)
+        if shifr:
             dialog = InputDialog(text="Type new master-key", title="Ney master-key")
             new_key = dialog.get_input()
-
             new_encrypted_key = make_verification_key(key=new_key, string=self.verification_key_string)
             if check_file_is_empty(self.file_pwds):
                 with open(self.file_key, 'w') as f:
@@ -301,8 +303,7 @@ class App(ctk.CTk):
                 with open(self.file_pwds, 'w') as f:
                     f.write(new_encrypted_pwds)
             self.communication_message('Master-key is successfully changed.')
-
-        except BaseException:
+        else:
             self.communication_message(f'{key} is incorrect key.')
 
 

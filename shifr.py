@@ -129,3 +129,19 @@ def make_verification_key(key: str, string: str):
     fer = Fernet(key)
     string = bytes(string, encoding='utf')
     return fer.encrypt(string).decode()
+
+
+def check_correct_shifr(key: str, file_pwds: str, file_key: str, verification_key_string: str):
+    """Try to initialize Shifr-class object given arguments.
+
+    key - key
+    file_pwds - file with pwds
+    file_key - file with master-key
+    verification_key_string.
+
+    Returns:
+        Shifr-class object if key and other arguments are correct. Else return False."""
+    try:
+        return Shifr(key=key, file_pwds=file_pwds, file_key=file_key, verification_key_string=verification_key_string)
+    except BaseException:
+        return False
