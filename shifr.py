@@ -143,5 +143,5 @@ def check_correct_shifr(key: str, file_pwds: str, file_key: str, verification_ke
         Shifr-class object if key and other arguments are correct. Else return False."""
     try:
         return Shifr(key=key, file_pwds=file_pwds, file_key=file_key, verification_key_string=verification_key_string)
-    except BaseException:
+    except Exception:
         return False
