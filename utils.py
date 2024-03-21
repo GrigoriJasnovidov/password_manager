@@ -1,5 +1,11 @@
 def make_formatted_key(string: str):
-    """Make key acceptable for Fernet."""
+    """Make key acceptable for Fernet.
+
+    Args:
+        string: a string to covert to password. Must contain letters or numbers, maxim 43 symbols.
+    Returns:
+        a string fulled up by zeros and '=' at the end. The length of new string is 44 symbols, and it is acceptable for
+        Fernet."""
     string = str(string)
     if not all(x.isspace() or x.isalnum() for x in string):
         raise ValueError('Use only numbers and letters for password!')
@@ -11,7 +17,13 @@ def make_formatted_key(string: str):
 
 
 def check_file_is_empty(file_name):
-    """Check whether file is empty."""
+    """Check whether file is empty.
+
+    Args:
+        file_name - name of the file.
+    Returns:
+        whether file_name is empty file or not.
+    """
     with open(file_name) as f:
         text = f.read()
     return text == ''
@@ -25,7 +37,7 @@ def remove_line(text: str, url: str, login: str):
         url - url
         login - login.
     Returns:
-        Text without removed string."""
+        tuple - (whether a string was found, new text without removed string if exists)."""
 
     deleted = False
     if text == '':
@@ -43,21 +55,18 @@ def remove_line(text: str, url: str, login: str):
         new_text = ''
         for x in lines:
             new_text += x + '\n'
-        return new_text
     else:
-        raise ValueError(f'No line with url={url} and login={login}.')
-
-
-def get_lines(text: str):
-    """Return content of the file in list of lines."""
-    if text == '':
-        raise ValueError('Text is empty.')
-    while text[-1] == '':
-        text = text[:-1]
-    return text.split('\n')
+        new_text = text
+    return deleted, new_text
 
 
 def get_lines_for_output(text: str):
+    """Prepare raw text to be shown in more human-readable format.
+
+    Args:
+        text: text to format. Each line must contain exactly alias, url, login and password.
+    Returns:
+        list of processed lines."""
     if text == '':
         raise ValueError('Text is empty!')
     while text[-1] == '\n':
@@ -68,7 +77,10 @@ def get_lines_for_output(text: str):
 
 
 def remove_last_line(file_name):
-    """Correctly remove last line."""
+    """Correctly remove last line in a given file.
+
+    Args:
+        file_name - name of the file."""
 
     with open(file_name, 'r') as f:
         lines = f.readlines()
@@ -91,6 +103,15 @@ def add_line(file_name, string: str):
 
 
 def approve_adding(text, url, login):
+    """Approve whether to add a new password.
+
+    If a line with given url and login already exists in text, then text is unchanged. Otherwise, a line is added.
+    Args:
+        text - text with already existing passwords, urls, logins, aliases
+        url - url
+        login - login.
+    Returns:
+        whether a new line should be added or not."""
     approve = True
     if text == '':
         return approve

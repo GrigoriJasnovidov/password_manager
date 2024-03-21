@@ -16,10 +16,12 @@ class Shifr:
     def __init__(self,
                  key: str,
                  file_pwds: str,
-                 file_key: str):
+                 file_key: str,
+                 verification_key_string: str):
         """Initialize Shifr object. Initialization is possible only if file agrees with key."""
         self.file_pwds = file_pwds
         self.file_key = file_key
+        self.verification_key_string = verification_key_string
         self.key = key
         self.formatted_key = make_formatted_key(key)
         self.fer = Fernet(self.formatted_key)
@@ -27,10 +29,10 @@ class Shifr:
         self._bind_file()
 
     def _bind_file(self):
-        """Read file with passwords. If first password agrees with key allows initialization."""
+        """Read file with encrypted master-key and decrypt it with self.key. If succeeds, allows initialization."""
 
         if check_file_is_empty(file_name=self.file_key):
-            encrypted_line = make_verification_key(self.key)
+            encrypted_line = make_verification_key(self.key, string=self.verification_key_string)
             with open(self.file_key, 'w') as f:
                 f.write(encrypted_line)
         else:
@@ -42,7 +44,10 @@ class Shifr:
                     raise ValueError('key is not correct. Try authentic code.')
 
     def encrypt_str(self, string: str):
-        """Encrypt a string without '\n'."""
+        """Encrypt a string without '\n'.
+
+        Args:
+            string to encrypt."""
         if string == '':
             raise ValueError('String is empty!')
         string = str(string)
@@ -50,6 +55,10 @@ class Shifr:
         return self.fer.encrypt(string).decode()
 
     def decrypt_str(self, string: str):
+        """Decrypt a string without '\n'.
+
+        Args:
+            string to decrypt."""
         if string == '':
             raise ValueError('String is empty!')
         string = str(string)
@@ -57,7 +66,10 @@ class Shifr:
         return self.fer.decrypt(string).decode()
 
     def encrypt_text(self, text: str):
-        """Encrypt string with several lines."""
+        """Encrypt string with several lines.
+
+        Args:
+            text: a string with several lines."""
         if text == '':
             raise ValueError('Text is empty!')
         while text[-1] == '\n':
@@ -69,7 +81,9 @@ class Shifr:
         return encrypted_text
 
     def decrypt_text(self, text: str):
-        """Decrypt string with several lines."""
+        """Decrypt string with several lines.
+
+        Args: text with encrypted strings separated by '\n'."""
         if text == '':
             raise ValueError('Text is empty!')
         while text[-1] == '\n':
@@ -103,8 +117,14 @@ class Shifr:
         return self.encrypt_str(string)
 
 
-def make_verification_key(key: str, string: str = 'Password_2024'):
-    """For given key returns Fernet(key).encrypt(string)."""
+def make_verification_key(key: str, string: str):
+    """For given key returns Fernet(key).encrypt(string).
+
+    Args:
+        key - key
+        string - some non-secret string to build passwords.
+    Returns:
+        string encrypted with key."""
     key = make_formatted_key(key)
     fer = Fernet(key)
     string = bytes(string, encoding='utf')
