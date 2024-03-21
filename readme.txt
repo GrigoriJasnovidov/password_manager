@@ -5,12 +5,12 @@ automatical 64 symbols password is generated using sha256 algorithm. The usage o
 functions forces the password to be almost random sequence of numbers and letters a-f. A line containing
 alias, url, login and generated password is added to password.gpwd file, while encrypted master-key is saved
 in master-key.gpwd file. The cryptography part is based on cryptography and hashlib packages and graphical 
-interface relies on CustomTkinter pacakege. 
+interface relies on CustomTkinter package. 
 
 Buttons:
 
 1. "Exit" - quit application.
-2. "Clear" - clear all ouputs frames.
+2. "Clear" - clear all outputs.
 3. "Decrypt Passwords" - decrypt and show all passwords. Master-key is neccessary for this operation.
 4. "Add Password" - add a new password. To add a new password user must fill alias, url and login forms 
                     before clicking on this button. The password will be automatically generated given url, 
