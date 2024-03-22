@@ -7,6 +7,9 @@ alias, url, login and generated password is added to password.gpwd file, while e
 in master-key.gpwd file. The cryptography part is based on cryptography and hashlib packages and graphical
 interface relies on CustomTkinter package.
 
+We recommend a master-key to be at least 15 symbols to safely encrypt passwords, such length should prevent
+against brut-force-methods. Only numbers, capital and lowercase letters are allowed for master key.
+
 Buttons:
 
 1. "Exit" - quit application.
