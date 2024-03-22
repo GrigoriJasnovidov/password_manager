@@ -288,25 +288,31 @@ class App(ctk.CTk):
         if shifr:
             dialog = InputDialog(text="Type new master-key", title="Ney master-key")
             new_key = dialog.get_input()
-
-            dialog = InputDialog(text="Type new master-key again", title="Repeat master-key")
-
-            new_encrypted_key = make_verification_key(key=new_key, string=self.verification_key_string)
-            if check_file_is_empty(self.file_pwds):
-                with open(self.file_key, 'w') as f:
-                    f.write(new_encrypted_key)
+            message = check_key_correctness(new_key)
+            if message != 'Key is correct.':
+                self.communication_message(message)
             else:
-                with open(self.file_pwds, 'r') as f:
-                    old_encrypted_pwds = f.read()
-                old_decrypted_pwds = shifr.decrypt_text(text=old_encrypted_pwds)
-                with open(self.file_key, 'w') as f:
-                    f.write(new_encrypted_key)
-                new_shifr = Shifr(key=new_key, file_pwds=self.file_pwds, file_key=self.file_key,
-                                  verification_key_string=self.verification_key_string)
-                new_encrypted_pwds = new_shifr.encrypt_text(text=old_decrypted_pwds)
-                with open(self.file_pwds, 'w') as f:
-                    f.write(new_encrypted_pwds)
-            self.communication_message('Master-key is successfully changed.')
+                dialog = InputDialog(text="Type new master-key again", title="Repeat master-key")
+                key2 = dialog.get_input()
+                if key2 != new_key:
+                    self.communication_message("Initial and repeated keys do not match. Try again.")
+                else:
+                    new_encrypted_key = make_verification_key(key=new_key, string=self.verification_key_string)
+                    if check_file_is_empty(self.file_pwds):
+                        with open(self.file_key, 'w') as f:
+                            f.write(new_encrypted_key)
+                    else:
+                        with open(self.file_pwds, 'r') as f:
+                            old_encrypted_pwds = f.read()
+                        old_decrypted_pwds = shifr.decrypt_text(text=old_encrypted_pwds)
+                        with open(self.file_key, 'w') as f:
+                            f.write(new_encrypted_key)
+                        new_shifr = Shifr(key=new_key, file_pwds=self.file_pwds, file_key=self.file_key,
+                                          verification_key_string=self.verification_key_string)
+                        new_encrypted_pwds = new_shifr.encrypt_text(text=old_decrypted_pwds)
+                        with open(self.file_pwds, 'w') as f:
+                            f.write(new_encrypted_pwds)
+                    self.communication_message('Master-key is successfully changed.')
         else:
             self.communication_message(f'{key} is incorrect key.')
 
