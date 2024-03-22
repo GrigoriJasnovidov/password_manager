@@ -2,18 +2,27 @@ def make_formatted_key(string: str):
     """Make key acceptable for Fernet.
 
     Args:
-        string: a string to covert to password. Must contain letters or numbers, maxim 43 symbols.
+        string: a string to covert to password. Must contain letters or numbers, maximum 43 symbols.
     Returns:
         a string fulled up by zeros and '=' at the end. The length of new string is 44 symbols, and it is acceptable for
         Fernet."""
+    message = check_key_correctness(string)
+    if message == 'Key is correct.':
+        string = str(string)
+        zeros = '0' * (43 - len(string))
+        return True, string + zeros + '='
+    else:
+        return False, message
+
+
+def check_key_correctness(string: str):
     string = str(string)
     if not all(x.isspace() or x.isalnum() for x in string):
-        raise ValueError('Use only numbers and letters for password!')
+        return 'Use only numbers and letters for password!'
     elif len(string) > 43:
-        raise ValueError('Key must be maximum of 43 symbols.')
+        return 'Key must be maximum of 43 symbols.'
     else:
-        zeros = '0' * (43 - len(string))
-        return string + zeros + '='
+        return 'Key is correct.'
 
 
 def check_file_is_empty(file_name):

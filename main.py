@@ -10,7 +10,8 @@ from shifr import Shifr, make_verification_key, check_correct_shifr
 from utils import make_formatted_key
 from verification import check_credentials
 from generate_pwd import make_pwd
-from utils import check_file_is_empty, get_lines_for_output, remove_line, remove_last_line, add_line, approve_adding
+from utils import check_file_is_empty, get_lines_for_output, remove_line, remove_last_line, add_line, approve_adding, \
+    check_key_correctness
 
 
 class App(ctk.CTk):
@@ -223,7 +224,7 @@ class App(ctk.CTk):
             shifr = check_correct_shifr(key=key, file_pwds=self.file_pwds, file_key=self.file_key,
                                         verification_key_string=self.verification_key_string)
             if shifr:
-                formatted_key = make_formatted_key(key)
+                proceed, formatted_key = make_formatted_key(key)
                 auto_pwd = make_pwd(url=url, login=login, key=formatted_key)
                 self.communication_message(auto_pwd)
             else:
@@ -287,6 +288,9 @@ class App(ctk.CTk):
         if shifr:
             dialog = InputDialog(text="Type new master-key", title="Ney master-key")
             new_key = dialog.get_input()
+
+            dialog = InputDialog(text="Type new master-key again", title="Repeat master-key")
+
             new_encrypted_key = make_verification_key(key=new_key, string=self.verification_key_string)
             if check_file_is_empty(self.file_pwds):
                 with open(self.file_key, 'w') as f:

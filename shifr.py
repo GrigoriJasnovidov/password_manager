@@ -9,7 +9,7 @@ class Shifr:
     """Class for auto-generating, cyphering and decrypting password for websites.
 
     Args:
-        key - secret code allowing working with passwords. Must be memorized and not written anywhere;
+        key - secret code allowing working with passwords. Must contain only letters or numbers, maximum 43 symbols.
         file_pwds - name of file with passwords
         file_key - name key verification file."""
 
@@ -23,7 +23,11 @@ class Shifr:
         self.file_key = file_key
         self.verification_key_string = verification_key_string
         self.key = key
-        self.formatted_key = make_formatted_key(key)
+        proceed, mfk = make_formatted_key(key)
+        if proceed:
+            self.formatted_key = mfk
+        else:
+            raise ValueError(mfk)
         self.fer = Fernet(self.formatted_key)
 
         self._bind_file()
@@ -125,7 +129,9 @@ def make_verification_key(key: str, string: str):
         string - some non-secret string to build passwords.
     Returns:
         string encrypted with key."""
-    key = make_formatted_key(key)
+    proceed, key = make_formatted_key(key)
+    if not proceed:
+        raise ValueError(key)
     fer = Fernet(key)
     string = bytes(string, encoding='utf')
     return fer.encrypt(string).decode()
